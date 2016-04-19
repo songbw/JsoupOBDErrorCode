@@ -54,6 +54,12 @@ public class MongoUtil {
 		query.put("_id", new ObjectId(id));
 		return collection.findOne(query);
 	}
+
+	public static long queryCount(String tableName) {
+		DBCollection collection = chleonDB.getCollection(tableName);
+
+		return collection.count();
+	}
 	
 	public static void update(String tableName, DBObject query, DBObject obj) {
 		DBCollection collection = chleonDB.getCollection(tableName);
