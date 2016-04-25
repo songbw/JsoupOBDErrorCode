@@ -47,6 +47,11 @@ public class MongoUtil {
 		DBCollection collection = chleonDB.getCollection(tableName);
 		return collection.find(query).toArray();
 	}
+
+	public static List<DBObject> query(String tableName) throws Exception {
+		DBCollection collection = chleonDB.getCollection(tableName) ;
+		return collection.find().toArray() ;
+	}
 	
 	public static DBObject query(String tableName, String id) {
 		DBCollection collection = chleonDB.getCollection(tableName);
