@@ -27,7 +27,8 @@ public class BZJTreeParse {
 //        tempurl = tempurl.substring(1,tempurl.length()) ;
 //        Document basedoc = getDoc(baseUrl + tempurl) ;
         try {
-            getStandard();
+            getTree();
+//            getStandard();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -114,7 +115,29 @@ public class BZJTreeParse {
         Element ulElement = elements.get(0) ;
         Elements baseliElements = ulElement.children() ;
         BZJTreeBean bzjTree = new BZJTreeBean();
-        getTreeUl(baseliElements,bzjTree) ;
+//        getTreeUl(baseliElements,bzjTree) ;
+        parseUL(ulElement,bzjTree);
+    }
+
+    public static void parseUL(Element ul,BZJTreeBean bzjTree) {
+        for (Element li : ul.children()) {
+            bzjTree.setName(li.child(0).text());
+            bzjTree.setParentId(bzjTree.getId());
+//            Object id = MongoUtil.getNextSequence();
+//            bzjTree.setId(Long.valueOf(id.toString()));
+            Object _id = MongoUtil.add("BZJTree", bzjTree) ;
+            BZJTreeBean bzj = new BZJTreeBean();
+            if (li.select("ul") != null) {
+                Element nextUl = li.select("ul").get(0);
+                bzj.setParentId(Long.valueOf(_id.toString()));
+                parseUL(nextUl,bzj);
+            } else {
+                bzj.setParentId(Long.valueOf(_id.toString()));
+                bzj.setName(li.child(0).text());
+                bzj.setUrl(li.select("a").attr("href"));
+                MongoUtil.add("BZJTree", bzjTree) ;
+            }
+        }
     }
 
     public static void getTreeUl(Elements baseElement,BZJTreeBean bzjTree) {
@@ -125,24 +148,24 @@ public class BZJTreeParse {
                 bzjTree.set_id(null);
                 bzjTree.setName(li.child(0).text());
                 bzjTree.setParentId(bzjTree.getId());
-                String _id = MongoUtil.add("BZJTree", bzjTree) ;
-                DBObject bzjTree1 =  MongoUtil.query("BZJTree", _id);
+                Object _id = MongoUtil.add("BZJTree", bzjTree) ;
+//                DBObject bzjTree1 =  MongoUtil.query("BZJTree", _id);
                 long id = MongoUtil.queryCount("BZJTree") ;
                 bzjTree.setId(id + 1);
                 bzjTree.setKinship(bzjTree.getKinship() + bzjTree.getId() + ",");
-                MongoUtil.updateBatch("BZJTree",bzjTree1,bzjTree);
+//                MongoUtil.updateBatch("BZJTree",bzjTree1,bzjTree);
                 getTreeUl(li.child(1).children(), bzjTree);
             } else if (li.children().size() == 1) {
                 bzjTree.set_id(null);
                 bzjTree.setUrl(li.child(0).attr("href"));
                 bzjTree.setName(li.child(0).text());
                 bzjTree.setParentId(bzjTree.getId());
-                String _id = MongoUtil.add("BZJTree", bzjTree) ;
-                DBObject bzjTree1 =  MongoUtil.query("BZJTree", _id);
+//                String _id = MongoUtil.add("BZJTree", bzjTree) ;
+//                DBObject bzjTree1 =  MongoUtil.query("BZJTree", _id);
                 long id = MongoUtil.queryCount("BZJTree") ;
                 bzjTree.setId(id + 1);
                 bzjTree.setKinship(bzjTree.getKinship() + bzjTree.getId() + ",");
-                MongoUtil.updateBatch("BZJTree", bzjTree1, bzjTree);
+//                MongoUtil.updateBatch("BZJTree", bzjTree1, bzjTree);
             }
 
         }
