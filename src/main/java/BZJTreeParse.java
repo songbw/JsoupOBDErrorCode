@@ -5,6 +5,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import utils.DBUtil;
 import utils.MongoUtil;
 
 import javax.imageio.ImageIO;
@@ -39,13 +40,9 @@ public class BZJTreeParse {
     static int counts = 0;
 
     public static void main(String[] args) {
-//        getTree();
-//        String tempurl = "./list_1_2_92.html";
-//        tempurl = tempurl.substring(1,tempurl.length()) ;
-//        Document basedoc = getDoc(baseUrl + tempurl) ;
         try {
-            getTree();
-//            getStandard();
+//            getTree();
+            getStandard();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -53,37 +50,34 @@ public class BZJTreeParse {
     }
 
     public static void getStandard() throws Exception {
-        List<DBObject> dbobjects = MongoUtil.query("BZJTree") ;
-        for (DBObject dbobject : dbobjects) {
+        List<BZJTreeBean> bzjTreeBeans = DBUtil.findTreeByUrl();
+        for (BZJTreeBean bzjTreeBean : bzjTreeBeans) {
 
-            if(dbobject.get("Url") != null && !"null".equals(dbobject.get("Url")) && !"".equals(dbobject.get("Url"))) {
+//            String kinship = (String) dbobject.get("Kinship");
+            Long parentId = bzjTreeBean.getId();
+            StandardBean standardBean = new StandardBean() ;
+//            standardBean.setKinship(kinship);
+            standardBean.setParentId(parentId);
 
-                String kinship = (String) dbobject.get("Kinship");
-                Long parentId = (Long) dbobject.get("Id");
-                StandardBean standardBean = new StandardBean() ;
-                standardBean.setKinship(kinship);
-                standardBean.setParentId(parentId);
+            String url = bzjTreeBean.getUrl();
+            System.out.println("baseURL is : " + url);
+            url = url.substring(1,url.length()) ;
+            Document basedoc = getDoc(baseUrl + url) ;
+            Element element = basedoc.body() ;
+            Elements tables = element.select("table") ;
+            getStandardContent(element,standardBean);
 
-                String url = (String) dbobject.get("Url");
-                System.out.println("baseURL is : " + url);
-                url = url.substring(1,url.length()) ;
-                Document basedoc = getDoc(baseUrl + url) ;
-                Element element = basedoc.body() ;
-                Elements tables = element.select("table") ;
-                getStandardContent(element,standardBean);
+            // 分页获取数据
+            Element pages = tables.get(7).select("div[class=page]").get(0) ;
+            Elements pageList = pages.select("a[href]") ;
+            for (Element link : pageList) {
+                String pageUrl = link.attr("href") ;
+                Document pageDoc = getDoc(pageBaseUrl + pageUrl) ;
 
-                // 分页获取数据
-                Element pages = tables.get(7).select("div[class=page]").get(0) ;
-                Elements pageList = pages.select("a[href]") ;
-                for (Element link : pageList) {
-                    String pageUrl = link.attr("href") ;
-                    Document pageDoc = getDoc(pageBaseUrl + pageUrl) ;
-
-                    Element pageElement = pageDoc.body() ;
-                    getStandardContent(pageElement, standardBean);
-                }
-
+                Element pageElement = pageDoc.body() ;
+                getStandardContent(pageElement, standardBean);
             }
+
         }
     }
 
