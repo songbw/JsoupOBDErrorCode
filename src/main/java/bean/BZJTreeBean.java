@@ -8,7 +8,7 @@ import java.io.Serializable;
 /**
  * Created by song on 16/4/19.
  */
-@Entity(value = "BZJTree", noClassnameStored = true)
+//@Entity(value = "BZJTree", noClassnameStored = true)
 public class BZJTreeBean extends ReflectionDBObject implements Serializable{
 
     private long id;
