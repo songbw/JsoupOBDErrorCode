@@ -36,11 +36,23 @@ public class MongoUtil {
 		}
 	}
 
-	public static String add(String tableName, DBObject obj) {
+	public static Object add(String tableName, DBObject obj) {
 		DBCollection collection = chleonDB.getCollection(tableName);
 		collection.insert(obj);
 		ObjectId id = (ObjectId)obj.get("_id");
-		return id.toString();
+		return id;
+	}
+
+	public static Object  getNextSequence() {
+		DBCollection collection = chleonDB.getCollection("counter");
+		DBObject query = new BasicDBObject();
+		query.put("_id", "treeid");
+		DBObject obj = new BasicDBObject();
+		obj.put("seq",1);
+		DBObject update = new BasicDBObject("inc",obj);
+		DBObject result = collection.findAndModify(query, null, null,
+				false, update,true,false);
+		return result.get("seq");
 	}
 
 	public static List<DBObject> query(String tableName, DBObject query) throws Exception {
@@ -87,14 +99,23 @@ public class MongoUtil {
 //        updatedValue.put("status", 2);
         // DBObject updateSetValue = new BasicDBObject("$set", updatedValue);
 
-        DBObject query = new BasicDBObject();
-		query.put("serial_number", "babe002");
-		query.put("status", 0);
-		DBObject pending = new BasicDBObject();
-		pending.put("status", 1);
-		MongoUtil.updateBatch("task", query, pending);
+        
+//        DBObject query = new BasicDBObject();
+//		query.put("serial_number", "babe002");
+//		query.put("status", 0);
+//		DBObject pending = new BasicDBObject();
+//		pending.put("status", 1);
+//		MongoUtil.updateBatch("task", query, pending);
+//
+//		updateBatch("task", query, pending);
 
-		updateBatch("task", query, pending);
+
+
+			BasicDBObject document = new BasicDBObject();
+			document.append("_id", "treeid");
+			document.append("seq", 0);
+			DBCollection collection = chleonDB.getCollection("counter") ;
+			collection.insert(document);
 	}
 
 }

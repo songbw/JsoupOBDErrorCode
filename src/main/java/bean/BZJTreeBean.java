@@ -1,7 +1,6 @@
 package bean;
 
 import com.mongodb.ReflectionDBObject;
-import org.mongodb.morphia.annotations.Entity;
 
 import java.io.Serializable;
 
@@ -13,7 +12,7 @@ public class BZJTreeBean extends ReflectionDBObject implements Serializable{
 
     private long id;
     private String name;
-    private String count ;
+    private int count ;
     private String url ;
     private long parentId ;
     private String kinship;
@@ -34,11 +33,11 @@ public class BZJTreeBean extends ReflectionDBObject implements Serializable{
         this.name = name;
     }
 
-    public String getCount() {
+    public int getCount() {
         return count;
     }
 
-    public void setCount(String count) {
+    public void setCount(int count) {
         this.count = count;
     }
 

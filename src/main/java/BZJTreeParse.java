@@ -16,6 +16,8 @@ import java.net.URL;
 import java.sql.*;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by song on 16/4/19.
@@ -29,11 +31,12 @@ public class BZJTreeParse {
     private static int count = 0 ;
     // JDBC driver name and database URL
     static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-    static final String DB_URL = "jdbc:mysql://115.29.208.184:3306/standard?useUnicode=true&characterEncoding=utf8";
+    static final String DB_URL = "jdbc:mysql://42.121.121.130:3307/biaozhun?useUnicode=true&characterEncoding=utf8";
 
     //  Database credentials
     static final String USER = "root";
-    static final String PASS = "123456";
+    static final String PASS = "xiquedaojia@123";
+    static int counts = 0;
 
     public static void main(String[] args) {
 //        getTree();
@@ -41,7 +44,8 @@ public class BZJTreeParse {
 //        tempurl = tempurl.substring(1,tempurl.length()) ;
 //        Document basedoc = getDoc(baseUrl + tempurl) ;
         try {
-            getStandard();
+            getTree();
+//            getStandard();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -278,50 +282,95 @@ public class BZJTreeParse {
         Element ulElement = elements.get(0) ;
         Elements baseliElements = ulElement.children() ;
         BZJTreeBean bzjTree = new BZJTreeBean();
-        getTreeUl(baseliElements,bzjTree) ;
+        parseUL(ulElement,bzjTree);
     }
 
-    public static void getTreeUl(Elements baseElement,BZJTreeBean bzjTree) {
-        //parent info
-        String kinship = bzjTree.getKinship() ;
-        long parentId = bzjTree.getParentId();
-
-        for (Element li: baseElement) {
-
-            if (li.children().size() > 1) {
-                bzjTree.set_id(null);
+    public static void parseUL(Element ul,BZJTreeBean bzjTree) {
+        for (Element li : ul.children()) {
+            BZJTreeBean bzj = new BZJTreeBean();
+            if (li.select("ul").size() != 0) {
                 bzjTree.setName(li.child(0).text());
-                bzjTree.setParentId(bzjTree.getId());
-                String _id = MongoUtil.add("BZJTree", bzjTree) ;
-                DBObject bzjTree1 =  MongoUtil.query("BZJTree", _id);
-                long id = MongoUtil.queryCount("BZJTree") ;
-//                bzjTree.setId(id + 1);
-                bzjTree.setId(id);
-                if (kinship == null) {
-                    bzjTree.setKinship(parentId+","+bzjTree.getId()+",");
-                } else {
-                    bzjTree.setKinship(kinship + bzjTree.getId() + ",");
-                }
-
-                MongoUtil.updateBatch("BZJTree",bzjTree1,bzjTree);
-                getTreeUl(li.child(1).children(), bzjTree);
-            } else if (li.children().size() == 1) {
-
-                bzjTree.set_id(null);
-                bzjTree.setUrl(li.child(0).attr("href"));
-                bzjTree.setName(li.child(0).text());
-                bzjTree.setParentId(parentId);
-                String _id = MongoUtil.add("BZJTree", bzjTree) ;
-                DBObject bzjTree1 =  MongoUtil.query("BZJTree", _id);
-                long id = MongoUtil.queryCount("BZJTree") ;
-//                bzjTree.setId(id + 1);
-                bzjTree.setId(id);
-                bzjTree.setKinship(kinship + bzjTree.getId() + ",");
-                MongoUtil.updateBatch("BZJTree", bzjTree1, bzjTree);
+                long id  = insertTree(bzjTree);
+                System.out.println(counts++ + ": " + li.child(0).text());
+                Element nextUl = li.select("ul").get(0);
+                bzj.setParentId(id);
+                parseUL(nextUl,bzj);
+            } else {
+                String allName = li.child(0).text();
+                String[] name = allName.split("\\(");
+                String regEx="[^0-9]";
+                Pattern p = Pattern.compile(regEx);
+                Matcher m = p.matcher(allName);
+                String count = m.replaceAll("").trim();
+                bzjTree.setName(name[0]);
+                bzjTree.setCount(Integer.parseInt(count));
+                bzjTree.setUrl(li.select("a").attr("href"));
+                System.out.println(counts++ + ": name is " + name[0] + "  url is : " + li.select("a").attr("href") + " , count is : " + Integer.parseInt(count));
+                insertTree(bzjTree);
             }
-
         }
     }
+
+    public static long insertTree(BZJTreeBean bzjTreeBean) {
+        Connection conn = null;
+        Statement stmt = null;
+        Long insertId = 0l;
+        try {
+            //STEP 2: Register JDBC driver
+            Class.forName("com.mysql.jdbc.Driver");
+
+            //STEP 3: Open a connection
+            System.out.println("Connecting to database...");
+            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+
+            //STEP 4: Execute a query
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+            String insertSql = "insert into bzj_tree(name,count,url,parentId,kinship) values('" + bzjTreeBean.getName() + "'," +
+                    "'" + bzjTreeBean.getCount() + "'," +
+                    "'" + bzjTreeBean.getUrl() + "'," +
+                    "'" + bzjTreeBean.getParentId() + "'," +
+                    "" + bzjTreeBean.getKinship() + ")";
+            PreparedStatement pstmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
+            pstmt.executeUpdate();
+
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if (rs.next()) {
+                insertId = rs.getLong(1);
+//                    System.out.println("数据主键：" + insertId);
+            }
+
+//            bzjTreeBean.setKinship(bzjTreeBean.getKinship() + insertId + ",");
+//            String updateSql = "update standard set kinship = '"+bzjTreeBean.getKinship()+"' where id =" + insertId ;
+//            stmt.executeUpdate(updateSql);
+
+
+            //STEP 6: Clean-up environment
+            stmt.close();
+            conn.close();
+        } catch (SQLException se) {
+            //Handle errors for JDBC
+            se.printStackTrace();
+        } catch (Exception e) {
+            //Handle errors for Class.forName
+            e.printStackTrace();
+        } finally {
+            //finally block used to close resources
+            try {
+                if (stmt != null)
+                    stmt.close();
+            } catch (SQLException se2) {
+            }// nothing we can do
+            try {
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }//end finally try
+        }
+        return insertId;
+    }
+
 
     public static byte[] readStream(InputStream inputStream) throws Exception{
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
