@@ -63,76 +63,131 @@ public class BZJTreeParse {
             System.out.println("baseURL is : " + url);
             url = url.substring(1,url.length()) ;
             Document basedoc = getDoc(baseUrl + url) ;
-            Element element = basedoc.body() ;
+            Element element = basedoc.select(".indexbox").get(1) ;
             Elements tables = element.select("table") ;
-            getStandardContent(element,standardBean);
+            Element content = tables.get(4);
+            getStandardContent(content,standardBean);
 
             // 分页获取数据
-            Element pages = tables.get(7).select("div[class=page]").get(0) ;
+            Element pages = tables.get(3).select("div[class=page]").get(0) ;
             Elements pageList = pages.select("a[href]") ;
             for (Element link : pageList) {
                 String pageUrl = link.attr("href") ;
                 Document pageDoc = getDoc(pageBaseUrl + pageUrl) ;
-
-                Element pageElement = pageDoc.body() ;
-                getStandardContent(pageElement, standardBean);
+                Element pageElement = pageDoc.select(".indexbox").get(1)  ;
+                Elements pageTables = pageElement.select("table");
+                Element pageContent = pageTables.get(4);
+                getStandardContent(pageContent, standardBean);
             }
 
         }
+    }
+
+    /**
+     * 解析小图片ele
+     * @param smallImgEle
+     * @return
+     */
+    private static String parseSmallImgEle(Element smallImgEle) {
+        String path = smallImgEle.select("img").attr("src");
+        return path;
+    }
+
+    /**
+     * 解析文字信息
+     * @param textEle
+     * @return
+     */
+    private static StandardBean parseTextEle(Element textEle) {
+        StandardBean standardBean = new StandardBean();
+        Elements textEles = textEle.children();
+        String biaozhunType = textEles.get(0).text();
+        String[] names = textEles.get(2).text().split(" ");
+        String daihao="";
+        for (int i=0;i<names.length-1;i++) {
+            daihao=daihao+names[i];
+        }
+        String name = names[names.length-1];
+        String dengxiaobz = textEles.get(5).text();
+        String engName = textEles.get(7).text();
+        standardBean.setEngName(engName);
+        standardBean.setName(name);
+        standardBean.setType(biaozhunType);
+        standardBean.setSimilar(dengxiaobz);
+        standardBean.setCode(daihao);
+        System.out.println("标准类型：" + biaozhunType + " ,代号: " + daihao + " ,名称: " + name + " ,等效标准: " + dengxiaobz + " ,英语名称：" +engName);
+        return standardBean;
+    }
+
+
+    private static String getBigImgDoc(Element imgEle) {
+        String path = imgEle.select("a").attr("href");
+        return path;
+    }
+
+    private static String getBigImgUrl(String docUrl) {
+        Document imgDoc = getDoc(pageBaseUrl + docUrl) ;
+//        Document imgDoc = getDoc("http://www.164580.com/info_153.html") ;
+        Element item1Element = imgDoc.getElementById("item1") ;
+        Elements elements = item1Element.children();
+        Element imgEle = elements.get(6);
+        // 格式错了，返回空路径
+        if (imgEle.nodeName().equals("div")) {
+            return null;
+        }
+        Element imgTdEle = imgEle.select("td[align=center]").get(0);
+        String imgPath = imgTdEle.select("img").attr("src");
+        return imgPath;
     }
 
     // 从doc中获取具体内容
     public static void getStandardContent(Element element, StandardBean standardParent) throws Exception{
         Connection conn = null;
         Statement stmt = null;
-        String kinship = standardParent.getKinship() ;
         long parentId = standardParent.getParentId() ;
-        Elements tables = element.select("table") ;
-        Element table = tables.get(8) ;
-        Elements tableList = table.select("td").get(0).select("table[width=100%]") ;
-        for (Element ele : tableList) {
+//        Elements tableList = element.select("td").get(0).select("table[width=100%]") ;
+        Element tr = element.child(0).child(0);
+        Elements talist = tr.child(0).children();
+        for (Element ele : talist) {
             //解析具体内容
-            StandardBean standardBean = new StandardBean() ;
-            standardBean.setKinship(kinship);
+            Element tbody = ele.getElementsByTag("tbody").get(0);
+            Elements contents = tbody.child(0).children();
+            Element smallImgElement = contents.get(2);
+            Element smallImg2Ele = contents.get(3);
+            Element textInfoEle = contents.get(4);
+
+            StandardBean standardBean = parseTextEle(textInfoEle);
             standardBean.setParentId(parentId);
-            Elements tds = ele.select("td") ;
-            Element td3 = tds.get(3) ;
-            Element td4 = tds.get(4) ;
-            standardBean.setSmallImg(td3.select("img[src]").get(0).attr("src"));
-            standardBean.setsImgAlt(td3.select("img[alt]").get(0).attr("alt"));
-            String type = td4.select("font[color=#666666]").get(0).text() ;
-            standardBean.setType(type);
-            String name = td4.select("font[style=font-size:14px]").get(0).text() ;
-            standardBean.setName(name);
-            String engName = "" ;
-            if (td4.select("span") != null && td4.select("span").size() > 0) {
-                engName = td4.select("span").get(0).text() ;
-                standardBean.setEngName(engName);
+            String smallImg = parseSmallImgEle(smallImgElement);
+            String smallImg2Path = parseSmallImgEle(smallImg2Ele);
+            standardBean.setSmallImg(smallImg);
+            standardBean.setSmallImgT(smallImg2Path);
+            String bigImg = getBigImgDoc(smallImgElement);
+
+
+//            Document imgDoc = getDoc(pageBaseUrl + bigImg) ;
+//            Element imgElement = imgDoc.body() ;
+//            Elements imgSelects = imgElement.select("table[align=center]") ;
+//            Element imgTable = imgSelects.get(7) ;
+            String img = getBigImgUrl(bigImg) ;
+            standardBean.setImg(bigImg);
+//            String title = "" ;
+//            if (imgTable.select("img") != null && imgTable.select("img").size() > 0) {
+//                img = imgTable.select("img").get(0).attr("src") ;
+//                standardBean.setImg(img);
+//                title = imgTable.select("img").get(0).attr("title") ;
+//                standardBean.setImgTitle(title);
+//            }
+            String smallImgPath = getImg(standardBean.getSmallImg(),"small/") ;
+            String smallImgPathT = getImg(standardBean.getSmallImgT(),"smallt/") ;
+            standardBean.setSmallImgPath(smallImgPath);
+            standardBean.setSmallImgPathT(smallImgPathT);
+            if (img!=null && (!"".equals(img))) {
+                String imgPath = getImg(pageBaseUrl + img, "big/") ;
+                standardBean.setImgPath(imgPath);
             }
 
-            String similar = "" ;
-            if (td4.select("font[color=#333333]") != null && td4.select("font[color=#333333]").size() > 0) {
-                similar = td4.select("font[color=#333333]").get(0).text() ;
-                standardBean.setSimilar(similar);
-            }
-            String imgUrl = td4.select("a[href]").get(0).attr("href") ;
-            Document imgDoc = getDoc(pageBaseUrl + imgUrl) ;
-            Element imgElement = imgDoc.body() ;
-            Elements imgSelects = imgElement.select("table[align=center]") ;
-            Element imgTable = imgSelects.get(7) ;
-            String img = "" ;
-            String title = "" ;
-            if (imgTable.select("img") != null && imgTable.select("img").size() > 0) {
-                img = imgTable.select("img").get(0).attr("src") ;
-                standardBean.setImg(img);
-                title = imgTable.select("img").get(0).attr("title") ;
-                standardBean.setImgTitle(title);
-            }
-            String smallImgPath = getImg(standardBean.getSmallImg(),"small/") ;
-            standardBean.setSmallImgPath(smallImgPath);
-            String imgPath = getImg(pageBaseUrl + img, "big/") ;
-            standardBean.setImgPath(imgPath);
-            standardBean.set_id(null);
+//            standardBean.set_id(null);
 //            String _id = MongoUtil.add("Standard", standardBean);
 //            long id = MongoUtil.queryCount("Standard") ;
 //            DBObject standard =  MongoUtil.query("Standard", _id);
@@ -201,7 +256,7 @@ public class BZJTreeParse {
                 }//end finally try
             }//end try
             System.out.println("Goodbye!");
-            System.out.println("count : "+ count +", parentId : " +standardBean.getParentId() +"  , kinship : "+standardBean.getKinship()+",  informations is  smallImg : " + standardBean.getSmallImg() + ", imgAlt : " + standardBean.getsImgAlt() + ", type : " + type + ", name : " + name + ", engName : " + engName + ", similar : " + similar + ", img : "  + img + ", title : " + title);
+//            System.out.println("count : "+ count +", parentId : " +standardBean.getParentId() +"  , kinship : "+standardBean.getKinship()+",  informations is  smallImg : " + standardBean.getSmallImg() + ", imgAlt : " + standardBean.getsImgAlt() + ", type : " + type + ", name : " + name + ", engName : " + engName + ", similar : " + similar + ", img : "  + img + ", title : " + title);
             count ++ ;
         }
     }
@@ -214,16 +269,18 @@ public class BZJTreeParse {
         int a = conn.getResponseCode() ;
         if (conn.getResponseCode() <10000){
             InputStream inputStream = conn.getInputStream();
-            return imageOpertion(inputStream,local) ;
+            if (local.equals("big/")) {
+                return imageOpertion(inputStream,local) ;
+            }
 
-//            byte[] data = readStream(inputStream);
-//            if(data.length>(1024*1)){
-//                String localPath = "./img/" + local + new Date().getTime() + ".jpg" ;
-//                FileOutputStream outputStream = new FileOutputStream(localPath);
-//                outputStream.write(data);
-//                outputStream.close();
-//                return localPath ;
-//            }
+            byte[] data = readStream(inputStream);
+            if(data.length>(1024*1)){
+                String localPath = "./img/" + local + new Date().getTime() + ".jpg" ;
+                FileOutputStream outputStream = new FileOutputStream(localPath);
+                outputStream.write(data);
+                outputStream.close();
+                return localPath ;
+            }
         }
 
         return null ;

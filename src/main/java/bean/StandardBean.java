@@ -26,6 +26,10 @@ public class StandardBean extends ReflectionDBObject implements Serializable {
     private String smallImg ;
     //小图片路径
     private String smallImgPath;
+    //小图片网页路径2
+    private String smallImgT ;
+    //小图片路径2
+    private String smallImgPathT;
     // 小图片描述
     private String sImgAlt ;
     //大图片网页路径
@@ -147,5 +151,21 @@ public class StandardBean extends ReflectionDBObject implements Serializable {
 
     public void setImgPath(String imgPath) {
         this.imgPath = imgPath;
+    }
+
+    public String getSmallImgT() {
+        return smallImgT;
+    }
+
+    public void setSmallImgT(String smallImgT) {
+        this.smallImgT = smallImgT;
+    }
+
+    public String getSmallImgPathT() {
+        return smallImgPathT;
+    }
+
+    public void setSmallImgPathT(String smallImgPathT) {
+        this.smallImgPathT = smallImgPathT;
     }
 }
