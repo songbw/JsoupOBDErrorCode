@@ -5,7 +5,7 @@ import org.mongodb.morphia.annotations.Id;
 
 import java.io.Serializable;
 
-@Entity(value = "OBDErrorCode2", noClassnameStored = true)
+//@Entity(value = "OBDErrorCode2", noClassnameStored = true)
 public class OBDErrorCode implements Serializable {
 	private static final long serialVersionUID = 8234066333260774300L;
 

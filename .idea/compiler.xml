@@ -17,16 +17,18 @@
       <profile default="true" name="Default" enabled="false">
         <processorPath useClasspath="true" />
       </profile>
-      <profile default="false" name="Maven default annotation processors profile" enabled="true">
+      <profile default="false" name="Annotation profile for Jsoup-smartauto" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <option name="codetrans.config" value="D:\song\project\JsoupOBDErrorCode/codetrans-config.json" />
+        <option name="codetrans.output" value="D:\song\project\JsoupOBDErrorCode/src/main" />
         <processorPath useClasspath="true" />
         <module name="Jsoup-smartauto" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="Jsoup-smartauto" target="1.5" />
+      <module name="Jsoup-smartauto" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

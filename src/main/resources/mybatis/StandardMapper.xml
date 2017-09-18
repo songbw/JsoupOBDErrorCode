@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dao.StandardDAO">
+
+    <resultMap id="standardResultMap" type="bean.StandardBean">
+        <id property="id" column="id" />
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="engName" column="engName"/>
+        <result property="parentId" column="parentId"/>
+        <result property="kinship" column="kinship"/>
+        <result property="code" column="code"/>
+        <result property="smallImg" column="smallImg"/>
+        <result property="smallImgPath" column="smallImgPath"/>
+        <result property="smallImgFlag" column="smallImgFlag"/>
+        <result property="smallImgT" column="smallImgT"/>
+        <result property="smallImgPathT" column="smallImgPathT"/>
+        <result property="smallImgTFlag" column="smallImgTFlag"/>
+        <result property="img" column="img"/>
+        <result property="imgPath" column="imgPath"/>
+        <result property="imgPathFlag" column="imgPathFlag"/>
+        <result property="similar" column="similar"/>
+    </resultMap>
+
+    <insert id="addStandard"  keyProperty="id">
+        insert into standard
+        (name,parentId,kinship,type,engName,code,smallImg,smallImgPath,smallImgFlag, smallImgT,smallImgPathT,smallImgTFlag,img,imgPath,imgPathFlag,similar)
+        values
+        (#{name},#{parentId},#{kinship},#{type},#{engName},#{code},#{smallImg},#{smallImgPath},
+        #{smallImgFlag},#{smallImgT},#{smallImgPathT},#{smallImgTFlag},#{img},#{imgPath},
+        #{imgPathFlag},#{similar})
+    </insert>
+
+    <select id="selectTopOne" resultType="bean.StandardBean">
+        select * from standard order by id desc  limit 1;
+    </select>
+
+    <select id="countByParentId" resultType="int" parameterType="Long">
+        select count(*) from standard WHERE parentId=#{parentId};
+    </select>
+</mapper>

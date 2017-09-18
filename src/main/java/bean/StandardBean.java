@@ -1,9 +1,15 @@
 package bean;
 
+import com.mongodb.ReflectionDBObject;
+import org.mongodb.morphia.annotations.Entity;
+
+import java.io.Serializable;
+
 /**
  * Created by song on 16/4/20.
  */
-public class StandardBean {
+//@Entity(value = "Standard", noClassnameStored = true)
+public class StandardBean extends ReflectionDBObject implements Serializable {
     private long id;
     // 标准件名称
     private String name ;
@@ -16,12 +22,26 @@ public class StandardBean {
     private String engName ;
 
     private String code ;
-    //小图片路径
+    //小图片网页路径
     private String smallImg ;
+    //小图片路径
+    private String smallImgPath;
+    //小图片是否上传Upai
+    private boolean smallImgFlag;
+    //小图片网页路径2
+    private String smallImgT ;
+    //小图片路径2
+    private String smallImgPathT;
+    //小图片2是否上传Upai
+    private boolean smallImgTFlag;
     // 小图片描述
     private String sImgAlt ;
-    //大图片路径
+    //大图片网页路径
     private String img ;
+    //大图片路径
+    private String imgPath;
+    //大图片是否上传Upai
+    private boolean imgPathFlag;
     // 有效标准
     private String similar ;
     // 大图片描述
@@ -121,5 +141,61 @@ public class StandardBean {
 
     public void setImgTitle(String imgTitle) {
         this.imgTitle = imgTitle;
+    }
+
+    public String getSmallImgPath() {
+        return smallImgPath;
+    }
+
+    public void setSmallImgPath(String smallImgPath) {
+        this.smallImgPath = smallImgPath;
+    }
+
+    public String getImgPath() {
+        return imgPath;
+    }
+
+    public void setImgPath(String imgPath) {
+        this.imgPath = imgPath;
+    }
+
+    public String getSmallImgT() {
+        return smallImgT;
+    }
+
+    public void setSmallImgT(String smallImgT) {
+        this.smallImgT = smallImgT;
+    }
+
+    public String getSmallImgPathT() {
+        return smallImgPathT;
+    }
+
+    public void setSmallImgPathT(String smallImgPathT) {
+        this.smallImgPathT = smallImgPathT;
+    }
+
+    public boolean isSmallImgFlag() {
+        return smallImgFlag;
+    }
+
+    public void setSmallImgFlag(boolean smallImgFlag) {
+        this.smallImgFlag = smallImgFlag;
+    }
+
+    public boolean isSmallImgTFlag() {
+        return smallImgTFlag;
+    }
+
+    public void setSmallImgTFlag(boolean smallImgTFlag) {
+        this.smallImgTFlag = smallImgTFlag;
+    }
+
+    public boolean isImgPathFlag() {
+        return imgPathFlag;
+    }
+
+    public void setImgPathFlag(boolean imgPathFlag) {
+        this.imgPathFlag = imgPathFlag;
     }
 }
