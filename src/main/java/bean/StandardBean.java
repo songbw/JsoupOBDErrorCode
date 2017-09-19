@@ -46,6 +46,7 @@ public class StandardBean extends ReflectionDBObject implements Serializable {
     private String similar ;
     // 大图片描述
     private String imgTitle ;
+    private String nameKey;
 
     public long getId() {
         return id;
@@ -197,5 +198,13 @@ public class StandardBean extends ReflectionDBObject implements Serializable {
 
     public void setImgPathFlag(boolean imgPathFlag) {
         this.imgPathFlag = imgPathFlag;
+    }
+
+    public String getNameKey() {
+        return nameKey;
+    }
+
+    public void setNameKey(String nameKey) {
+        this.nameKey = nameKey;
     }
 }

@@ -22,6 +22,7 @@
         <result property="imgPath" column="imgPath"/>
         <result property="imgPathFlag" column="imgPathFlag"/>
         <result property="similar" column="similar"/>
+        <result property="nameKey" column="nameKey"/>
     </resultMap>
 
     <insert id="addStandard"  keyProperty="id">
@@ -40,4 +41,20 @@
     <select id="countByParentId" resultType="int" parameterType="Long">
         select count(*) from standard WHERE parentId=#{parentId};
     </select>
+
+    <select id="selectAll" resultMap="standardResultMap">
+        select * from standard
+    </select>
+
+    <update id="updateImgFlag" keyProperty="id" parameterType="bean.StandardBean">
+        update standard set smallImgFlag=#{smallImgFlag},
+        smallImgTFlag=#{smallImgTFlag},
+        imgPathFlag=#{imgPathFlag}
+        where id=#{id}
+    </update>
+
+    <update id="updateNameKey" keyProperty="id" parameterType="bean.StandardBean">
+        update standard set nameKey=#{nameKey}
+        where id=#{id}
+    </update>
 </mapper>

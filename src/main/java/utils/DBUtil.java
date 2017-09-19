@@ -11,6 +11,7 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -85,6 +86,54 @@ public class DBUtil {
             session.close();
         }
         return count;
+    }
+
+    public static List<StandardBean> findStandardAll() {
+        SqlSession session = sqlSessionFactory.openSession();
+        List<StandardBean> standardBeanList = new ArrayList<>() ;
+        try {
+            StandardDAO standardDAO = session.getMapper(StandardDAO.class) ;
+            standardBeanList = standardDAO.selectAll();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            session.close();
+        }
+        return standardBeanList;
+    }
+
+    public static void updateFlag(StandardBean standardBean) {
+        SqlSession session = sqlSessionFactory.openSession();
+        try {
+            StandardDAO standardDAO = session.getMapper(StandardDAO.class) ;
+            int i = standardDAO.updateImgFlag(standardBean);
+            session.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            session.close();
+        }
+    }
+
+    public static void updateStandardNameKey(StandardBean standardBean) {
+        SqlSession session = sqlSessionFactory.openSession();
+        try {
+            StandardDAO standardDAO = session.getMapper(StandardDAO.class) ;
+            int i = standardDAO.updateNameKey(standardBean);
+            session.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            session.close();
+        }
+    }
+
+    public static void main(String[] args) {
+        List<StandardBean> standardBeanList = findStandardAll();
+        for (StandardBean standardBean : standardBeanList) {
+            standardBean.setNameKey(standardBean.getCode() + standardBean.getName());
+            updateStandardNameKey(standardBean);
+        }
     }
 
 }

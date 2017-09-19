@@ -1,9 +1,11 @@
 package utils;
 
+import bean.StandardBean;
 import main.java.com.UpYun;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by sbw22 on 2017/9/18.
@@ -35,9 +37,26 @@ public class UpaiUtil {
     }
 
     public static void main(String[] args) {
-        System.out.println(15/20);
-
-
+        List<StandardBean> standardBeanList = DBUtil.findStandardAll();
+        for (StandardBean standardBean : standardBeanList) {
+            if (standardBean.getImgPath() != null && (!"".equals(standardBean.getImgPath()))) {
+                if (uploadImg(standardBean.getImgPath())) {
+                    standardBean.setImgPathFlag(true);
+                }
+            }
+            if (standardBean.getSmallImgPath() != null && (!"".equals(standardBean.getSmallImgPath()))) {
+                if (uploadImg(standardBean.getSmallImgPath())) {
+                    standardBean.setSmallImgFlag(true);
+                }
+            }
+            if (standardBean.getSmallImgPathT() != null && (!"".equals(standardBean.getSmallImgPathT()))) {
+                if (uploadImg(standardBean.getSmallImgPathT())) {
+                    standardBean.setSmallImgTFlag(true);
+                }
+            }
+            DBUtil.updateFlag(standardBean);
+        }
+//        uploadImg("small/1505720441965.jpg");
     }
 
 }
